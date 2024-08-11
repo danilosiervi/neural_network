@@ -5,11 +5,11 @@ from model.activations.activation import ActivationFunction
 class Linear(ActivationFunction):
     def __init__(self):
         def activation_function(inputs: np.ndarray) -> np.ndarray:
-            self.outputs = inputs
+            self.outputs = inputs.copy()
             return self.outputs
 
         def activation_function_prime(outputs_prime: np.ndarray) -> np.ndarray:
-            self.inputs_prime = outputs_prime
+            self.inputs_prime = outputs_prime.copy()
             return self.inputs_prime
 
         def predictions(outputs: np.ndarray) -> np.ndarray:

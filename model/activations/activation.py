@@ -13,7 +13,7 @@ class ActivationFunction:
         self.predictions = predictions
 
     def forward(self, inputs: np.ndarray) -> np.ndarray:
-        self.inputs = inputs
+        self.inputs = inputs.copy()
         return self._activation_function(inputs)
 
     def backward(self, outputs_prime: np.ndarray) -> np.ndarray:

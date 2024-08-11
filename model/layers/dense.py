@@ -33,7 +33,7 @@ class DenseLayer(Layer):
         self.activation = get_activation(activation)()
 
     def forward(self, inputs: np.ndarray) -> np.ndarray:
-        self.inputs = inputs
+        self.inputs = inputs.copy()
         self.outputs = np.dot(inputs, self.weights) + self.biases
 
         return self.activation.forward(self.outputs)
@@ -41,7 +41,7 @@ class DenseLayer(Layer):
     def backward(self, activation_outputs_prime: np.ndarray) -> np.ndarray:
         outputs_prime = self.activation.backward(activation_outputs_prime)
 
-        self.outputs_prime = outputs_prime
+        self.outputs_prime = outputs_prime.copy()
         self.weights_prime = np.dot(self.inputs.T, outputs_prime)
         self.biases_prime = np.sum(outputs_prime, axis=0, keepdims=True)
 
