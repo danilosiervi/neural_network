@@ -3,7 +3,7 @@ from model.optimizers.optimizer import Optimizer
 from model.layers.layer import Layer
 
 
-class OptimizerSGD(Optimizer):
+class SGD(Optimizer):
     def __init__(self, learning_rate=1., decay=0., momentum=0.):
         super().__init__(learning_rate, decay)
 

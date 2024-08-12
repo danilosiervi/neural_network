@@ -3,7 +3,7 @@ from model.optimizers.optimizer import Optimizer
 from model.layers.layer import Layer
 
 
-class OptimizerAdaGrad(Optimizer):
+class AdaGrad(Optimizer):
     def __init__(self, learning_rate=1., decay=0., epsilon=1e-7):
         super().__init__(learning_rate, decay)
 

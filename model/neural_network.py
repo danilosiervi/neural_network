@@ -1,42 +1,71 @@
 import numpy as np
+from model.losses.losses import get_loss
 
 
 class NeuralNetwork:
-    def __init__(self, layers=np.ndarray([])):
-        self.layers = []
-        self.trainable_layers = []
+    def __init__(self, layers=None):
+        if layers is None:
+            layers = []
+        self.layers = layers
 
-        for i in layers:
-            self.layers.append(i)
+        self.input_layer = layers[0]
+        self.output_layer = layers[-1]
+        self.hidden_layers = layers[1:-1]
 
         self.optimizer = None
         self.loss = None
         self.accuracy = None
 
-        self.input_layer = None
-        self.output_layer = None
-
     def add(self, layer):
         self.layers.append(layer)
 
-    def set(self, *, loss, optimizer, accuracy):
-        self.loss = loss
+    def set(self, *, loss, optimizer):
+        self.loss = get_loss(loss)()
         self.optimizer = optimizer
-        self.accuracy = accuracy
 
-    def finalize(self):
-        pass
+    def forward(self, x):
+        outputs = self.input_layer.forward(x)
 
-    def forward(self, x, training):
-        self.input_layer.forward(x, training)
+        for layer in self.hidden_layers:
+            outputs = layer.forward(outputs)
 
-        for layer in self.layers:
-            layer.forward(layer.next.outputs)
+        return self.output_layer.forward(outputs)
 
-        return layer.output
+    def backward(self, outputs, y):
+        loss_outputs = self.loss.backward(outputs, y)
+        inputs_prime = self.output_layer.backward(loss_outputs)
 
-    def backward(self, output, y):
-        pass
+        for layer in self.hidden_layers:
+            inputs_prime = layer.backward(inputs_prime)
 
-    def train(self, x, y, *, epochs=10000, print_every=100, validation_data=None):
-        pass
+        self.input_layer.backward(inputs_prime)
+
+    def train(self, x, y, *, epochs=10000, print_every=100):
+        accuracy_precision = np.std(y) / 250
+
+        for epoch in range(epochs + 1):
+            outputs = self.forward(x)
+
+            data_loss = self.loss.calculate(outputs, y)
+            regularization_loss = 0.
+
+            for layer in self.layers:
+                regularization_loss += self.loss.regularization_loss(layer)
+
+            loss = data_loss + regularization_loss
+            accuracy = np.mean(np.absolute(outputs - y) < accuracy_precision)
+
+            if not epoch % print_every:
+                print(f'epoch: {epoch}, '
+                      f'loss: {loss:.3f}, '
+                      f'accuracy: {accuracy:.3f}, '
+                      f'lr: {self.optimizer.current_learning_rate:.5f}')
+
+            self.backward(outputs, y)
+
+            self.optimizer.pre_update_params()
+
+            for layer in self.layers:
+                self.optimizer.update_params(layer)
+
+            self.optimizer.post_update_params()

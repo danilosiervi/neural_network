@@ -3,7 +3,7 @@ from model.optimizers.optimizer import Optimizer
 from model.layers.layer import Layer
 
 
-class OptimizerAdam(Optimizer):
+class Adam(Optimizer):
     def __init__(self, learning_rate=0.001, decay=0., epsilon=1e-7, beta1=0.9, beta2=0.999):
         super().__init__(learning_rate, decay)
 

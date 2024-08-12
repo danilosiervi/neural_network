@@ -3,7 +3,7 @@ from model.optimizers.optimizer import Optimizer
 from model.layers.layer import Layer
 
 
-class OptimizerRMSProp(Optimizer):
+class RMSProp(Optimizer):
     def __init__(self, learning_rate=0.001, decay=0., epsilon=1e-7, rho=0.9):
         super().__init__(learning_rate, decay)
 

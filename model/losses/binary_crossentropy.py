@@ -1,5 +1,5 @@
 import numpy as np
-from model.loss.loss import Loss
+from model.losses.loss import Loss
 
 
 class BinaryCrossentropy(Loss):

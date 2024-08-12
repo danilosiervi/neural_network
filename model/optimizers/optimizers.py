@@ -1,14 +1,14 @@
-from model.optimizers.sgd import OptimizerSGD
-from model.optimizers.ada_grad import OptimizerAdaGrad
-from model.optimizers.rms_prop import OptimizerRMSProp
-from model.optimizers.adam import OptimizerAdam
+from model.optimizers.sgd import SGD
+from model.optimizers.ada_grad import AdaGrad
+from model.optimizers.rms_prop import RMSProp
+from model.optimizers.adam import Adam
 
 
 ALL_OPTIMIZERS = {
-    OptimizerSGD,
-    OptimizerAdaGrad,
-    OptimizerRMSProp,
-    OptimizerAdam,
+    SGD,
+    AdaGrad,
+    RMSProp,
+    Adam,
 }
 
 ALL_OPTIMIZERS_DICT = {fn.__name__: fn for fn in ALL_OPTIMIZERS}
@@ -16,10 +16,10 @@ ALL_OPTIMIZERS_DICT = {fn.__name__: fn for fn in ALL_OPTIMIZERS}
 
 def get_optimizer(identifier):
     if identifier is None:
-        return OptimizerAdam
+        return Adam
 
     if isinstance(identifier, str):
-        obj = ALL_ACTIVATIONS_DICT.get(identifier, None)
+        obj = ALL_OPTIMIZERS_DICT.get(identifier, None)
     else:
         obj = identifier
 
