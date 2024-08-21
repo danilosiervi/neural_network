@@ -2,9 +2,6 @@ import numpy as np
 
 
 class Loss:
-    def __init__(self):
-        self.trainable_layers = np.array([])
-
     def calculate(self, output, y) -> float:
         sample_losses = self.forward(output, y)
         data_loss = np.mean(sample_losses)
@@ -25,6 +22,3 @@ class Loss:
             regularization_loss += layer.bias_regularizer_l2 * np.sum(layer.biases * layer.biases)
 
         return regularization_loss
-
-    def remember_trainable_layers(self, trainable_layers: np.ndarray) -> None:
-        self.trainable_layers = trainable_layers

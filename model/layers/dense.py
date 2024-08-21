@@ -7,8 +7,8 @@ from model.activations.activations import get_activation
 class DenseLayer(Layer):
     def __init__(
             self,
-            n_neurons,
             input_shape,
+            n_neurons,
             activation=None,
             weight_regularizer_l1=0.,
             weight_regularizer_l2=0.,

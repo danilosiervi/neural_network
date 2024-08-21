@@ -41,8 +41,6 @@ class NeuralNetwork:
         self.input_layer.backward(inputs_prime)
 
     def train(self, x, y, *, epochs=10000, print_every=100):
-        accuracy_precision = np.std(y) / 250
-
         for epoch in range(epochs + 1):
             outputs = self.forward(x)
 
@@ -53,19 +51,15 @@ class NeuralNetwork:
                 regularization_loss += self.loss.regularization_loss(layer)
 
             loss = data_loss + regularization_loss
-            accuracy = np.mean(np.absolute(outputs - y) < accuracy_precision)
 
             if not epoch % print_every:
                 print(f'epoch: {epoch}, '
                       f'loss: {loss:.3f}, '
-                      f'accuracy: {accuracy:.3f}, '
                       f'lr: {self.optimizer.current_learning_rate:.5f}')
 
             self.backward(outputs, y)
 
             self.optimizer.pre_update_params()
-
             for layer in self.layers:
                 self.optimizer.update_params(layer)
-
             self.optimizer.post_update_params()
