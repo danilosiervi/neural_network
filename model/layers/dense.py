@@ -62,3 +62,10 @@ class DenseLayer(Layer):
         self.inputs_prime = np.dot(outputs_prime, self.weights.T)
 
         return self.inputs_prime
+
+    def get_parameters(self):
+        return self.weights, self.biases
+
+    def set_parameters(self, weights, biases):
+        self.weights = weights
+        self.biases = biases
