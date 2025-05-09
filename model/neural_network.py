@@ -36,8 +36,6 @@ class NeuralNetwork:
         return self.output_layer.forward(outputs)
 
     def backward(self, outputs, y):
-        #if isinstance(self.output_layer, Softmax) and isinstance(self.loss, CategoricalCrossentropy):
-
         loss_outputs = self.loss.backward(outputs, y)
         inputs_prime = self.output_layer.backward(loss_outputs)
 
@@ -61,7 +59,7 @@ class NeuralNetwork:
             if not epoch % print_every:
                 print(f'epoch: {epoch}, '
                       f'loss: {loss:.3f}, '
-                      f'lr: {self.optimizer.current_learning_rate:.5f}')
+                      f'lr: {self.optimizer.current_learning_rate:.10f}')
 
             self.backward(outputs, y)
 
@@ -69,23 +67,3 @@ class NeuralNetwork:
             for layer in self.layers:
                 self.optimizer.update_params(layer)
             self.optimizer.post_update_params()
-
-    def get_parameters(self):
-        parameters = []
-
-        for layer in self.layers:
-            parameters.append(layer.get_parameters())
-
-        return parameters
-
-    def set_parameters(self, parameters):
-        for parameters_set, layer in zip(parameters, self.layers):
-            layer.set_parameters(*parameters_set)
-
-    def save_parameters(self, path):
-        with open(path, 'wb') as f:
-            pickle.dump(self.get_parameters(), f)
-
-    def load_parameters(self, path):
-        with open(path, 'rb') as f:
-            self.set_parameters(pickle.load(f))

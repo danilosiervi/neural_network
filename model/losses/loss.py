@@ -11,6 +11,9 @@ class Loss:
     def regularization_loss(self, layer) -> float:
         regularization_loss = 0.
 
+        if not hasattr(layer, 'weights'):
+            return 0.
+
         if layer.weight_regularizer_l1 > 0:
             regularization_loss += layer.weight_regularizer_l1 * np.sum(np.abs(layer.weights))
         if layer.weight_regularizer_l2 > 0:

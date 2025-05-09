@@ -12,6 +12,9 @@ class Adam(Optimizer):
         self.beta2 = beta2
 
     def update_params(self, layer: Layer):
+        if not hasattr(layer, 'weights'):
+            return
+
         if not hasattr(layer, 'weights_cache'):
             layer.weights_momentum = np.zeros_like(layer.weights)
             layer.weights_cache = np.zeros_like(layer.weights)
