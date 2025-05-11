@@ -67,3 +67,6 @@ class NeuralNetwork:
             for layer in self.layers:
                 self.optimizer.update_params(layer)
             self.optimizer.post_update_params()
+
+    def evaluate(self):
+        return
