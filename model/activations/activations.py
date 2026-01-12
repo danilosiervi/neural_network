@@ -25,3 +25,4 @@ def get_activation(identifier):
 
     if callable(obj):
         return obj
+    return None

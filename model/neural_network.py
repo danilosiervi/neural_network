@@ -1,9 +1,12 @@
-import copy
-
 import numpy as np
-from model.losses.losses import get_loss
+
 from model.activations.softmax import Softmax
+
+from model.losses.losses import get_loss
+
+from model.losses.binary_crossentropy import BinaryCrossentropy
 from model.losses.categorical_crossentropy import CategoricalCrossentropy
+from model.losses.mean_squared_error import MeanSquaredError
 
 
 class NeuralNetwork:
@@ -49,16 +52,14 @@ class NeuralNetwork:
             outputs = self.forward(x)
 
             data_loss = self.loss.calculate(outputs, y)
-            regularization_loss = 0.
-
-            for layer in self.layers:
-                regularization_loss += self.loss.regularization_loss(layer)
-
-            loss = data_loss + regularization_loss
+            regularization_loss = sum(self.loss.regularization_loss(layer) for layer in self.layers)
 
             if not epoch % print_every:
+                loss = data_loss + regularization_loss
+
                 print(f'epoch: {epoch}, '
                       f'loss: {loss:.3f}, '
+                      f'acc: {self.evaluate(x, y):.2f}%, '
                       f'lr: {self.optimizer.current_learning_rate:.10f}')
 
             self.backward(outputs, y)
@@ -68,5 +69,30 @@ class NeuralNetwork:
                 self.optimizer.update_params(layer)
             self.optimizer.post_update_params()
 
-    def evaluate(self):
-        return
+    def evaluate(self, x, y):
+        outputs = self.forward(x)
+        accuracy = 0
+
+        if isinstance(self.loss, CategoricalCrossentropy):
+            predicted_classes = self.output_layer.activation.predictions(outputs)
+
+            if len(y.shape) == 2:
+                y = np.argmax(y, axis=1)
+
+            accuracy = np.mean(predicted_classes == y)
+
+        elif isinstance(self.loss, BinaryCrossentropy):
+            predicted_classes = self.output_layer.activation.predictions(outputs)
+            accuracy = np.mean(predicted_classes == y)
+
+        elif isinstance(self.loss, MeanSquaredError):
+            predictions = outputs
+
+            y_true = y.reshape(-1, 1) if len(y.shape) == 1 else y
+            preds = predictions.reshape(-1, 1)
+
+            ss_res = np.sum((y_true - preds) ** 2)
+            ss_tot = np.sum((y_true - np.mean(y_true)) ** 2)
+            accuracy = max(0, 1 - ss_res / ss_tot) if ss_tot != 0 else 0
+
+        return accuracy * 100

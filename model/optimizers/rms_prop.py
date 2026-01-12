@@ -11,6 +11,8 @@ class RMSProp(Optimizer):
         self.rho = rho
 
     def update_params(self, layer: Layer):
+        if not hasattr(layer, 'weights'):
+            return
         if not hasattr(layer, 'weights_cache'):
             layer.weights_cache = np.zeros_like(layer.weights)
             layer.biases_cache = np.zeros_like(layer.biases)
