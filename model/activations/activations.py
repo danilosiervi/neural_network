@@ -2,11 +2,13 @@ from model.activations.linear import Linear
 from model.activations.relu import Relu
 from model.activations.softmax import Softmax
 from model.activations.sigmoid import Sigmoid
+from model.activations.tanh import Tanh
 
 
 ALL_ACTIVATIONS = {
     Linear,
     Relu,
+    Tanh,
     Softmax,
     Sigmoid,
 }

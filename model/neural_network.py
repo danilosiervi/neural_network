@@ -46,9 +46,10 @@ class NeuralNetwork:
         self.input_layer.backward(inputs_prime)
 
     def train(self, x, y, *, epochs=10000, print_every=100, validation_data=None, patience=None, min_delta=0.0001):
-        if validation_data is not None and patience is not None:
+        if validation_data is not None:
             x_val, y_val = validation_data
-            best_val_loss = float('inf')
+        if patience is not None:
+            best_loss = float('inf')
             patience_counter = 0
             best_weights = None
 
@@ -57,24 +58,25 @@ class NeuralNetwork:
 
             if not epoch % print_every:
                 if validation_data is not None:
-                    val_outputs = self.forward(x_val)
-                    val_data_loss = self.loss.calculate(val_outputs, y_val)
-                    val_reg_loss = sum(self.loss.regularization_loss(layer) for layer in self.layers)
-                    val_loss = val_data_loss + val_reg_loss
-                    val_acc = self.evaluate(x_val, y_val)
+                    outputs = self.forward(x_val)
+                    data_loss = self.loss.calculate(outputs, y_val)
+                    reg_loss = sum(self.loss.regularization_loss(layer) for layer in self.layers)
+                    loss = data_loss + reg_loss
 
+                    acc = self.evaluate(x_val, y_val)
                     outputs = self.forward(x)
-                    print(f'epoch: {epoch}, loss: {val_loss:.3f}, acc: {val_acc:.2f}%, lr: {self.optimizer.current_learning_rate:.10f}')
                 else:
                     data_loss = self.loss.calculate(outputs, y)
                     regularization_loss = sum(self.loss.regularization_loss(layer) for layer in self.layers)
                     loss = data_loss + regularization_loss
 
-                    print(f'epoch: {epoch}, loss: {loss:.3f}, acc: {self.evaluate(x, y):.2f}%, lr: {self.optimizer.current_learning_rate:.10f}')
+                    acc = self.evaluate(x, y)
 
-                if validation_data is not None and patience is not None:
-                    if val_loss < best_val_loss - min_delta:
-                        best_val_loss = val_loss
+                print(f'epoch: {epoch}, loss: {loss:.5f}, acc: {acc:.2f}%, lr: {self.optimizer.current_learning_rate:.10f}')
+
+                if patience is not None:
+                    if loss < best_loss - min_delta:
+                        best_loss = loss
                         patience_counter = 0
                         best_weights = self._save_weights()
                     else:
@@ -82,7 +84,7 @@ class NeuralNetwork:
 
                     if patience_counter >= patience:
                         print(f'\nEarly stopping triggered at epoch {epoch}')
-                        print(f'Best validation loss: {best_val_loss:.3f}')
+                        print(f'Best loss: {best_loss:.5f}')
                         self._restore_weights(best_weights)
                         break
 
