@@ -1,7 +1,5 @@
 import numpy as np
 
-from model.activations.softmax import Softmax
-
 from model.losses.losses import get_loss
 
 from model.losses.binary_crossentropy import BinaryCrossentropy
@@ -47,20 +45,46 @@ class NeuralNetwork:
 
         self.input_layer.backward(inputs_prime)
 
-    def train(self, x, y, *, epochs=10000, print_every=100):
+    def train(self, x, y, *, epochs=10000, print_every=100, validation_data=None, patience=None, min_delta=0.0001):
+        if validation_data is not None and patience is not None:
+            x_val, y_val = validation_data
+            best_val_loss = float('inf')
+            patience_counter = 0
+            best_weights = None
+
         for epoch in range(epochs + 1):
             outputs = self.forward(x)
 
-            data_loss = self.loss.calculate(outputs, y)
-            regularization_loss = sum(self.loss.regularization_loss(layer) for layer in self.layers)
-
             if not epoch % print_every:
-                loss = data_loss + regularization_loss
+                if validation_data is not None:
+                    val_outputs = self.forward(x_val)
+                    val_data_loss = self.loss.calculate(val_outputs, y_val)
+                    val_reg_loss = sum(self.loss.regularization_loss(layer) for layer in self.layers)
+                    val_loss = val_data_loss + val_reg_loss
+                    val_acc = self.evaluate(x_val, y_val)
 
-                print(f'epoch: {epoch}, '
-                      f'loss: {loss:.3f}, '
-                      f'acc: {self.evaluate(x, y):.2f}%, '
-                      f'lr: {self.optimizer.current_learning_rate:.10f}')
+                    outputs = self.forward(x)
+                    print(f'epoch: {epoch}, loss: {val_loss:.3f}, acc: {val_acc:.2f}%, lr: {self.optimizer.current_learning_rate:.10f}')
+                else:
+                    data_loss = self.loss.calculate(outputs, y)
+                    regularization_loss = sum(self.loss.regularization_loss(layer) for layer in self.layers)
+                    loss = data_loss + regularization_loss
+
+                    print(f'epoch: {epoch}, loss: {loss:.3f}, acc: {self.evaluate(x, y):.2f}%, lr: {self.optimizer.current_learning_rate:.10f}')
+
+                if validation_data is not None and patience is not None:
+                    if val_loss < best_val_loss - min_delta:
+                        best_val_loss = val_loss
+                        patience_counter = 0
+                        best_weights = self._save_weights()
+                    else:
+                        patience_counter += print_every
+
+                    if patience_counter >= patience:
+                        print(f'\nEarly stopping triggered at epoch {epoch}')
+                        print(f'Best validation loss: {best_val_loss:.3f}')
+                        self._restore_weights(best_weights)
+                        break
 
             self.backward(outputs, y)
 
@@ -68,6 +92,24 @@ class NeuralNetwork:
             for layer in self.layers:
                 self.optimizer.update_params(layer)
             self.optimizer.post_update_params()
+
+    def _save_weights(self):
+        weights = []
+        for layer in self.layers:
+            if hasattr(layer, 'weights') and hasattr(layer, 'biases'):
+                weights.append({
+                    'weights': layer.weights.copy(),
+                    'biases': layer.biases.copy()
+                })
+            else:
+                weights.append(None)
+        return weights
+
+    def _restore_weights(self, saved_weights):
+        for layer, saved in zip(self.layers, saved_weights):
+            if saved is not None:
+                layer.weights = saved['weights'].copy()
+                layer.biases = saved['biases'].copy()
 
     def evaluate(self, x, y):
         outputs = self.forward(x)
