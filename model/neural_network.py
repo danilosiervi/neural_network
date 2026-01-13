@@ -48,6 +48,7 @@ class NeuralNetwork:
     def train(self, x, y, *, epochs=10000, print_every=100, validation_data=None, patience=None, min_delta=0.0001):
         if validation_data is not None:
             x_val, y_val = validation_data
+
         if patience is not None:
             best_loss = float('inf')
             patience_counter = 0
@@ -59,6 +60,7 @@ class NeuralNetwork:
             if not epoch % print_every:
                 if validation_data is not None:
                     outputs = self.forward(x_val)
+
                     data_loss = self.loss.calculate(outputs, y_val)
                     reg_loss = sum(self.loss.regularization_loss(layer) for layer in self.layers)
                     loss = data_loss + reg_loss
