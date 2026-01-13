@@ -6,6 +6,8 @@ from model.losses.binary_crossentropy import BinaryCrossentropy
 from model.losses.categorical_crossentropy import CategoricalCrossentropy
 from model.losses.mean_squared_error import MeanSquaredError
 
+from model.activations.softmax import Softmax
+
 
 class NeuralNetwork:
     def __init__(self, layers=None):
@@ -37,8 +39,15 @@ class NeuralNetwork:
         return self.output_layer.forward(outputs)
 
     def backward(self, outputs, y):
-        loss_outputs = self.loss.backward(outputs, y)
-        inputs_prime = self.output_layer.backward(loss_outputs)
+        is_softmax = (hasattr(self.output_layer, 'activation') and isinstance(self.output_layer.activation, Softmax))
+        is_cce = isinstance(self.loss, CategoricalCrossentropy)
+
+        if is_softmax and is_cce:
+            inputs_prime = self.output_layer.activation.loss_backward(outputs, y)
+            inputs_prime = self.output_layer.backward(inputs_prime, skip_activation=True)
+        else:
+            loss_outputs = self.loss.backward(outputs, y)
+            inputs_prime = self.output_layer.backward(loss_outputs)
 
         for layer in reversed(self.hidden_layers):
             inputs_prime = layer.backward(inputs_prime)

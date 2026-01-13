@@ -4,7 +4,7 @@ from model.layers.layer import Layer
 
 
 class SGD(Optimizer):
-    def __init__(self, learning_rate=1., decay=0., momentum=0.):
+    def __init__(self, learning_rate=0.001, decay=0., momentum=0.):
         super().__init__(learning_rate, decay)
 
         self.momentum = momentum
