@@ -16,7 +16,10 @@ class DenseLayer(Layer):
             bias_regularizer_l2=0.
     ):
         self.inputs = np.array([])
-        self.weights = 0.01 * np.random.randn(input_shape, n_neurons)
+        if activation == 'Relu':
+            self.weights = np.random.randn(input_shape, n_neurons) * np.sqrt(2 / input_shape)
+        else:
+            self.weights = 0.01 * np.random.randn(input_shape, n_neurons)
         self.biases = np.zeros((1, n_neurons))
         self.outputs = np.array([])
 
@@ -38,8 +41,11 @@ class DenseLayer(Layer):
 
         return self.activation.forward(self.outputs)
 
-    def backward(self, activation_outputs_prime: np.ndarray) -> np.ndarray:
-        outputs_prime = self.activation.backward(activation_outputs_prime)
+    def backward(self, activation_outputs_prime: np.ndarray, skip_activation: bool = False) -> np.ndarray:
+        if skip_activation:
+            outputs_prime = activation_outputs_prime
+        else:
+            outputs_prime = self.activation.backward(activation_outputs_prime)
 
         self.outputs_prime = outputs_prime.copy()
         self.weights_prime = np.dot(self.inputs.T, outputs_prime)
